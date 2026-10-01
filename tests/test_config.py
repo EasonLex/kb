@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from kb.config import DEFAULT_SOURCES_FILE, expand, load_sources
+from kb.config import DEFAULT_SOURCES_FILE, KB_ROOT, expand, load_sources
 
 
 def test_expand_plain_and_default():
@@ -47,4 +47,5 @@ def test_sources_dir_defaults_to_parent_of_kb(monkeypatch):
     monkeypatch.delenv("KB_SRC_API", raising=False)
     sources = load_sources(DEFAULT_SOURCES_FILE)
     api = next(s for s in sources if s.name == "api")
-    assert api.path.name == "api" and api.path.parent.name == "TKR102"
+    # 預設是「kb 的上一層」，不管那層叫什麼：本機是 TKR102，CI 的 checkout 是 work/kb/kb
+    assert api.path == KB_ROOT.parent / "api"
