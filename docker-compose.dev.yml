@@ -1,0 +1,26 @@
+# 本機開發與測試用的 pgvector。生產環境的 kb-postgres 定義在 kb-service.yml（第三階段貼進 bus-airflow）。
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#   export KB_DATABASE_URL=postgresql://kb:kb-dev-only@127.0.0.1:5433/kb
+#
+# port 用 5433 不用 5432：這台可能已經有別的 Postgres（例如 bus-airflow 的 metadata DB）佔著 5432，
+# 「address already in use」會在容器啟動的最後一步才出現，前面看起來都正常。
+services:
+  kb-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: kb-postgres-dev
+    environment:
+      POSTGRES_USER: kb
+      POSTGRES_PASSWORD: kb-dev-only      # 只給本機 127.0.0.1 用，不是秘密
+      POSTGRES_DB: kb
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - kb-dev-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kb"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  kb-dev-pgdata:

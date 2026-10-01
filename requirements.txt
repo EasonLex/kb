@@ -1,0 +1,10 @@
+# 版本刻意釘死：這個專案不在 Airflow 的 constraint 保護之下（它有自己的映像檔）。
+# bus-airflow 那邊把同一組套件「不釘版本」加進它的 requirements.txt，交給 Airflow constraint 決定。
+#
+# Voyage 的 embedding 不裝官方 voyageai 套件——它會拖進 langchain-core、huggingface-hub、
+# tokenizers、numpy、pillow 共 60 幾個套件，而我們需要的只是一個 POST。見 kb/embed.py。
+psycopg[binary]==3.3.6
+pgvector==0.5.0
+jieba==0.42.1
+pyyaml==6.0.3
+requests==2.34.2

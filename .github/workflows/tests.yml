@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # 用真的 pgvector，不用 SQLite 或 mock：hybrid 檢索的 SQL 用到 <=> 與 tsvector，
+    # 換個引擎測到的不是我們跑的東西。跟 api 的 CI 對 MySQL 的態度一樣。
+    services:
+      pgvector:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: kb
+          POSTGRES_PASSWORD: ci-only-not-a-secret
+          POSTGRES_DB: kb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      KB_DATABASE_URL: postgresql://kb:ci-only-not-a-secret@127.0.0.1:5432/kb
+      EMBEDDING_PROVIDER: fake            # CI 不打 Voyage；向量路徑用 FakeEmbedder 走完
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安裝
+        run: pip install -r requirements-dev.txt
+
+      - name: 建 schema
+        run: python -m kb.db apply
+
+      - name: 測試
+        run: python -m pytest tests -q

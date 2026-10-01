@@ -1,0 +1,66 @@
+# 知識庫的來源。只有這三個 repo，其他資料夾不看。
+#
+# 只索引 git 追蹤中、且已 commit 的內容（讀的是 HEAD，不是工作目錄）：
+#   - .gitignore 蓋掉的東西（raw/、output/、.env*、*.ipynb、*.log）自然不會進來；
+#   - 每份文件都帶著 HEAD sha，出處連結才指得到正確版本；
+#   - 同一個 sha 跑兩次結果一樣。
+# include / exclude 是 glob，對 repo 內相對路徑比對；exclude 優先。
+#
+# path 用 ${KB_SRC_<NAME>:-${KB_SOURCES_DIR}/<資料夾>}：
+#   本機：KB_SOURCES_DIR 預設是 kb 的上一層，三個 repo 就並排在那裡。
+#   VM  ：主專案的 clone 叫 TKR102 不叫 TrafficProject，用 KB_SRC_TRAFFICPROJECT 個別指過去。
+sources:
+  - name: trafficproject
+    path: ${KB_SRC_TRAFFICPROJECT:-${KB_SOURCES_DIR}/TrafficProject}
+    repo: https://github.com/EasonLex/TKR102.git
+    github: EasonLex/TKR102
+    include:
+      - "*.md"
+      - "src/**/*.py"
+      - "sql/*.sql"
+      - "scripts/*"
+      - "deploy/*.yml"
+      - "docker-compose.yml"
+      - "Dockerfile"
+      - "pyproject.toml"
+      - "console.yml"
+    exclude:
+      - "src/trafficproject/legacy/**"      # 舊版流程，留著會跟現行做法打架
+      - "**/Archive.zip"
+    commits:
+      diff_max_lines: 400
+
+  - name: api
+    path: ${KB_SRC_API:-${KB_SOURCES_DIR}/api}
+    repo: git@github.com:EasonLex/bus-reliability-api.git
+    github: EasonLex/bus-reliability-api
+    include:
+      - "*.md"
+      - "*.py"
+      - "sql/*"
+      - "static/*.html"
+      - "*.yml"
+      - "Dockerfile"
+      - ".github/workflows/*.yml"
+      - "env.api.example"
+    exclude:
+      - "docs/**"                           # 只有截圖
+    commits:
+      diff_max_lines: 400
+
+  - name: bus-airflow
+    path: ${KB_SRC_BUS_AIRFLOW:-${KB_SOURCES_DIR}/bus-airflow}
+    repo: git@github.com:EasonLex/bus-airflow.git
+    github: EasonLex/bus-airflow
+    include:
+      - "*.md"
+      - "dags/*.py"
+      - "tests/*.py"
+      - "docker-compose.yml"
+      - "Dockerfile"
+      - "requirements*.txt"
+      - "env.example"
+      - ".github/workflows/*.yml"
+    exclude: []
+    commits:
+      diff_max_lines: 400
